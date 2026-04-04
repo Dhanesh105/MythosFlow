@@ -30,8 +30,8 @@ export default function StoryboardPage() {
         queryFn: async () => {
             const result = await getStoryboardItems(PROJECT_ID);
             if (result.success) {
-                setItems(result.data);
-                return result.data;
+                setItems(result.data || []);
+                return result.data || [];
             }
             return [];
         },
