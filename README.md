@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MythosFlow - AI-Driven Storytelling SaaS
 
 An AI-powered storytelling platform for sci-fi and mythology creators, featuring RAG-powered lore management, AI image generation, and interactive storyboarding.
@@ -153,3 +154,6 @@ MIT
 ## Support
 
 For issues or questions, please open a GitHub issue.
+=======
+# MythosFlow
+>>>>>>> 30b995a64d2648e8c6faca1c776c5b74ca3e6458
