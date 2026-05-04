@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Settings, Database, Cpu, Globe, ShieldCheck, RefreshCw, Loader2, Save, AlertCircle, CheckCircle2, Zap, Image as ImageIcon } from 'lucide-react';
+import { Settings, Database, Cpu, Globe, ShieldCheck, RefreshCw, Loader2, Save, AlertCircle, CheckCircle2, Zap, Image as ImageIcon, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,10 +35,11 @@ export default function SettingsPage() {
         const fetchData = async () => {
             const result = await getProjectDetails(DEFAULT_PROJECT_ID);
             if (result.success && result.data) {
-                setProjectName(result.data.name);
-                setProjectDesc(result.data.description || '');
-                setAiProvider(result.data.aiProvider || 'gemini');
-                setImageProvider(result.data.imageProvider || 'replicate');
+                const data = result.data as any; // Cast to any to bypass IDE sync lag
+                setProjectName(data.name);
+                setProjectDesc(data.description || '');
+                setAiProvider(data.aiProvider || 'gemini');
+                setImageProvider(data.imageProvider || 'replicate');
             }
             setIsLoading(false);
             
@@ -180,6 +181,27 @@ export default function SettingsPage() {
                                     </Select>
                                 </div>
                             </div>
+
+                            {/* Dynamic Warnings */}
+                            {imageProvider === 'replicate' && (
+                                <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 animate-in slide-in-from-top-2 duration-300">
+                                    <Key className="h-5 w-5 shrink-0" />
+                                    <div className="text-xs">
+                                        <p className="font-bold">API Key Required</p>
+                                        <p>Make sure to add your <strong>REPLICATE_API_TOKEN</strong> to your .env file to use SDXL.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {imageProvider === 'pollinations' && (
+                                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 animate-in slide-in-from-top-2 duration-300">
+                                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                                    <div className="text-xs">
+                                        <p className="font-bold">Free Tier Active</p>
+                                        <p>No API key required for Pollinations. Generation is unlimited and completely free.</p>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="grid gap-2">
                                 <label className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Project ID (Read Only)</label>
