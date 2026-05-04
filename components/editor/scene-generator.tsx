@@ -32,11 +32,14 @@ export function SceneGenerator({ isOpen, onClose, sceneText, projectId }: SceneG
         
         try {
             const response = await processScene(sceneText);
-            if (response.success && response.data) {
-                setResult(response.data);
+            if (response.success && response.data && typeof response.data === 'object' && 'imageUrl' in response.data) {
+                setResult({
+                    prompt: response.data.prompt,
+                    imageUrl: response.data.imageUrl || ''
+                });
                 toast.success('Scene generated successfully');
             } else {
-                toast.error(response.error || 'Failed to generate scene');
+                toast.error('error' in response ? (response.error as string) : 'Failed to generate scene');
             }
         } catch (error) {
             toast.error('An unexpected error occurred');
