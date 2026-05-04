@@ -12,8 +12,9 @@ model Project {
   name        String
   description String?
   userId      String
-  aiProvider  String   @default("gemini")
-  createdAt   DateTime @default(now())
+  aiProvider     String   @default("gemini")
+  imageProvider  String   @default("replicate")
+  createdAt      DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   loreEntries     LoreEntry[]

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Settings, Database, Cpu, Globe, ShieldCheck, RefreshCw, Loader2, Save, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+import { Settings, Database, Cpu, Globe, ShieldCheck, RefreshCw, Loader2, Save, AlertCircle, CheckCircle2, Zap, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,7 @@ export default function SettingsPage() {
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [aiProvider, setAiProvider] = useState('gemini');
+    const [imageProvider, setImageProvider] = useState('replicate');
     
     const [status, setStatus] = useState<any>({
         database: { status: 'unknown', message: 'Ready to check' },
@@ -37,6 +38,7 @@ export default function SettingsPage() {
                 setProjectName(result.data.name);
                 setProjectDesc(result.data.description || '');
                 setAiProvider(result.data.aiProvider || 'gemini');
+                setImageProvider(result.data.imageProvider || 'replicate');
             }
             setIsLoading(false);
             
@@ -63,7 +65,8 @@ export default function SettingsPage() {
         const result = await updateProjectSettings(DEFAULT_PROJECT_ID, {
             name: projectName,
             description: projectDesc,
-            aiProvider: aiProvider
+            aiProvider: aiProvider,
+            imageProvider: imageProvider
         });
         
         if (result.success) {
@@ -78,6 +81,7 @@ export default function SettingsPage() {
         setProjectName('MythosFlow Default Project');
         setProjectDesc('The initial project for your mythic storytelling.');
         setAiProvider('gemini');
+        setImageProvider('replicate');
         toast.info('Preferences reset to defaults (unsaved)');
     };
 
@@ -150,17 +154,31 @@ export default function SettingsPage() {
                                 />
                             </div>
 
-                            <div className="grid gap-2">
-                                <label className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Primary AI Provider</label>
-                                <Select value={aiProvider} onValueChange={setAiProvider}>
-                                    <SelectTrigger className="rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-                                        <SelectValue placeholder="Select provider" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="gemini">Google Gemini 1.5 Pro</SelectItem>
-                                        <SelectItem value="nvidia">NVIDIA Nemotron 3 Super</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                <div className="grid gap-2">
+                                    <label className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Primary AI Provider</label>
+                                    <Select value={aiProvider} onValueChange={setAiProvider}>
+                                        <SelectTrigger className="rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                                            <SelectValue placeholder="Select provider" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="gemini">Google Gemini 1.5 Pro</SelectItem>
+                                            <SelectItem value="nvidia">NVIDIA Nemotron 3 Super</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <label className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Image Engine</label>
+                                    <Select value={imageProvider} onValueChange={setImageProvider}>
+                                        <SelectTrigger className="rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                                            <SelectValue placeholder="Select engine" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="replicate">Replicate (SDXL - Paid)</SelectItem>
+                                            <SelectItem value="pollinations">Pollinations (Free tier)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             <div className="grid gap-2">

@@ -64,7 +64,7 @@ export async function checkServiceStatus() {
     }
 }
 
-export async function updateProjectSettings(id: string, data: { name: string; description?: string; aiProvider?: string }) {
+export async function updateProjectSettings(id: string, data: { name: string; description?: string; aiProvider?: string; imageProvider?: string }) {
     try {
         await prisma.project.update({
             where: { id },

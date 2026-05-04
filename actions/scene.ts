@@ -3,6 +3,7 @@
 import { geminiService } from '@/lib/ai/gemini';
 import { nvidiaService } from '@/lib/ai/nvidia';
 import { replicateService } from '@/lib/ai/replicate';
+import { pollinationsService } from '@/lib/ai/pollinations';
 import prisma from '@/lib/db/prisma';
 
 /**
@@ -33,10 +34,22 @@ export async function transformSceneToPrompt(sceneText: string, projectId: strin
 }
 
 /**
- * Generate an image from a prompt using Stable Diffusion XL
+ * Generate an image from a prompt
  */
-export async function generateSceneImage(prompt: string) {
+export async function generateSceneImage(prompt: string, projectId: string = 'default-project') {
     try {
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { imageProvider: true }
+        });
+
+        const provider = project?.imageProvider || 'replicate';
+
+        if (provider === 'pollinations') {
+            const imageUrl = await pollinationsService.generateImage(prompt);
+            return { success: true, data: imageUrl };
+        }
+
         const imageUrl = await replicateService.generateImage(prompt);
         return { success: true, data: imageUrl };
     } catch (error) {
