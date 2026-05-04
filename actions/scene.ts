@@ -1,14 +1,30 @@
 'use server';
 
 import { geminiService } from '@/lib/ai/gemini';
+import { nvidiaService } from '@/lib/ai/nvidia';
 import { replicateService } from '@/lib/ai/replicate';
+import prisma from '@/lib/db/prisma';
 
 /**
  * Transform a scene into a Stable Diffusion prompt
  */
-export async function transformSceneToPrompt(sceneText: string) {
+export async function transformSceneToPrompt(sceneText: string, projectId: string = 'default-project') {
     try {
-        const prompt = await geminiService.transformSceneToPrompt(sceneText);
+        // Fetch provider preference
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { aiProvider: true }
+        });
+
+        const provider = project?.aiProvider || 'gemini';
+        let prompt;
+
+        if (provider === 'nvidia') {
+            prompt = await nvidiaService.transformSceneToPrompt(sceneText);
+        } else {
+            prompt = await geminiService.transformSceneToPrompt(sceneText);
+        }
+
         return { success: true, data: prompt };
     } catch (error) {
         console.error('Error transforming scene to prompt:', error);

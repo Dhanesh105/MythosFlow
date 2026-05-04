@@ -4,6 +4,7 @@ import prisma from '@/lib/db/prisma';
 import { geminiService } from '@/lib/ai/gemini';
 import { pineconeService } from '@/lib/ai/pinecone';
 import { revalidatePath } from 'next/cache';
+import { ensureDefaultProject } from '@/lib/db/init';
 
 /**
  * Create a new lore entry with embedding generation and Pinecone storage
@@ -14,6 +15,7 @@ export async function createLoreEntry(
     content: string
 ) {
     try {
+        await ensureDefaultProject();
         // Generate embedding using Gemini
         const embedding = await geminiService.generateEmbedding(content);
 
@@ -101,6 +103,7 @@ export async function searchLore(
  */
 export async function getLoreEntries(projectId: string) {
     try {
+        await ensureDefaultProject();
         const entries = await prisma.loreEntry.findMany({
             where: { projectId },
             orderBy: { createdAt: 'desc' },

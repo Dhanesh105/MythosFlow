@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db/prisma';
 import { revalidatePath } from 'next/cache';
+import { ensureDefaultProject } from '@/lib/db/init';
 
 /**
  * Add an image to the storyboard
@@ -12,6 +13,7 @@ export async function addToStoryboard(
     scenePrompt?: string
 ) {
     try {
+        await ensureDefaultProject();
         // Get the current max order
         const maxOrder = await prisma.storyboardItem.aggregate({
             where: { projectId },
@@ -103,6 +105,7 @@ export async function saveStoryboard(
  */
 export async function getStoryboardItems(projectId: string) {
     try {
+        await ensureDefaultProject();
         const items = await prisma.storyboardItem.findMany({
             where: { projectId },
             orderBy: { order: 'asc' },
