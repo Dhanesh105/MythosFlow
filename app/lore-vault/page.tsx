@@ -31,7 +31,9 @@ export default function LoreVaultPage() {
 
     const createMutation = useMutation({
         mutationFn: async () => {
-            return await createLoreEntry(PROJECT_ID, title, content);
+            const result = await createLoreEntry(PROJECT_ID, title, content);
+            if (!result.success) throw new Error(result.error);
+            return result;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['loreEntries', PROJECT_ID] });
@@ -40,6 +42,9 @@ export default function LoreVaultPage() {
             setIsFormOpen(false);
             toast.success('Lore entry added to vault');
         },
+        onError: (error: any) => {
+            toast.error(error.message || 'Failed to add lore entry');
+        }
     });
 
     const handleSubmit = (e: React.FormEvent) => {
