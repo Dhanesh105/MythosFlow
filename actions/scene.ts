@@ -11,15 +11,21 @@ import prisma from '@/lib/db/prisma';
  */
 export async function transformSceneToPrompt(sceneText: string, projectId: string = 'default-project') {
     try {
-        // Fetch provider preference
-        const project = await prisma.project.findUnique({
-            where: { id: projectId },
-            select: { aiProvider: true }
-        });
+        let provider = 'nvidia';
+        
+        try {
+            // Try to fetch provider preference
+            const project = await prisma.project.findUnique({
+                where: { id: projectId },
+                select: { aiProvider: true }
+            });
+            provider = project?.aiProvider || 'nvidia';
+        } catch (dbError) {
+            console.warn('Database unreachable, defaulting to NVIDIA for prompt transformation');
+            // Fallback to NVIDIA if DB is down
+        }
 
-        const provider = project?.aiProvider || 'gemini';
         let prompt;
-
         if (provider === 'nvidia') {
             prompt = await nvidiaService.transformSceneToPrompt(sceneText);
         } else {
@@ -29,7 +35,7 @@ export async function transformSceneToPrompt(sceneText: string, projectId: strin
         return { success: true, data: prompt };
     } catch (error) {
         console.error('Error transforming scene to prompt:', error);
-        return { success: false, error: 'Failed to transform scene to prompt' };
+        return { success: false, error: 'AI generation failed. Please check your API keys.' };
     }
 }
 
@@ -38,12 +44,17 @@ export async function transformSceneToPrompt(sceneText: string, projectId: strin
  */
 export async function generateSceneImage(prompt: string, projectId: string = 'default-project') {
     try {
-        const project = await prisma.project.findUnique({
-            where: { id: projectId },
-            select: { imageProvider: true }
-        });
-
-        const provider = project?.imageProvider || 'replicate';
+        let provider = 'pollinations';
+        
+        try {
+            const project = await prisma.project.findUnique({
+                where: { id: projectId },
+                select: { imageProvider: true }
+            });
+            provider = project?.imageProvider || 'pollinations';
+        } catch (dbError) {
+            console.warn('Database unreachable, defaulting to Pollinations for image generation');
+        }
 
         if (provider === 'pollinations') {
             const imageUrl = await pollinationsService.generateImage(prompt);
@@ -54,7 +65,7 @@ export async function generateSceneImage(prompt: string, projectId: string = 'de
         return { success: true, data: imageUrl };
     } catch (error) {
         console.error('Error generating image:', error);
-        return { success: false, error: 'Failed to generate image' };
+        return { success: false, error: 'Image engine failed. Try switching to Pollinations (Free) in Settings.' };
     }
 }
 
