@@ -56,12 +56,13 @@ export async function processScene(sceneText: string) {
             return promptResult;
         }
 
-        if (!promptResult.data) {
-            return { success: false, error: 'Prompt generation returned empty data' };
+        // Generate image from prompt
+        const promptData = promptResult.data;
+        if (!promptData) {
+             return { success: false, error: 'Prompt generation returned empty data' };
         }
 
-        // Generate image from prompt
-        const imageResult = await generateSceneImage(promptResult.data);
+        const imageResult = await generateSceneImage(promptData);
         if (!imageResult.success) {
             return imageResult;
         }
