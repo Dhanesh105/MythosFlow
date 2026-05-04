@@ -35,12 +35,17 @@ export default function LoreVaultPage() {
             if (!result.success) throw new Error(result.error);
             return result;
         },
-        onSuccess: () => {
+        onSuccess: (result: any) => {
             queryClient.invalidateQueries({ queryKey: ['loreEntries', PROJECT_ID] });
             setTitle('');
             setContent('');
             setIsFormOpen(false);
-            toast.success('Lore entry added to vault');
+            
+            if (result.warning) {
+                toast.warning(result.warning);
+            } else {
+                toast.success('Lore entry added to vault');
+            }
         },
         onError: (error: any) => {
             toast.error(error.message || 'Failed to add lore entry');

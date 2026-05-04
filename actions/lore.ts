@@ -14,13 +14,12 @@ export async function createLoreEntry(
     title: string,
     content: string
 ) {
+    let loreEntry;
     try {
         await ensureDefaultProject();
-        // Generate embedding using Gemini
-        const embedding = await geminiService.generateEmbedding(content);
 
-        // Create the lore entry in the database
-        const loreEntry = await prisma.loreEntry.create({
+        // 1. Create the lore entry in the database FIRST
+        loreEntry = await prisma.loreEntry.create({
             data: {
                 projectId,
                 title,
@@ -28,32 +27,43 @@ export async function createLoreEntry(
             },
         });
 
-        // Store in Pinecone with metadata
-        const namespace = pineconeService.getProjectNamespace(projectId);
-        await pineconeService.upsertVector(
-            loreEntry.id,
-            embedding,
-            {
-                title,
-                content,
-                projectId,
-                createdAt: loreEntry.createdAt.toISOString(),
-            },
-            namespace
-        );
+        // 2. Try to generate embedding and sync to Pinecone
+        try {
+            const embedding = await geminiService.generateEmbedding(content);
+            const namespace = pineconeService.getProjectNamespace(projectId);
+            
+            await pineconeService.upsertVector(
+                loreEntry.id,
+                embedding,
+                {
+                    title,
+                    content,
+                    projectId,
+                    createdAt: loreEntry.createdAt.toISOString(),
+                },
+                namespace
+            );
 
-        // Update the lore entry with Pinecone ID
-        await prisma.loreEntry.update({
-            where: { id: loreEntry.id },
-            data: { pineconeId: loreEntry.id },
-        });
+            // Update with Pinecone ID
+            await prisma.loreEntry.update({
+                where: { id: loreEntry.id },
+                data: { pineconeId: loreEntry.id },
+            });
+        } catch (aiError) {
+            console.error('AI/Pinecone Sync Failed:', aiError);
+            // We don't fail the whole action, but we return a partial success
+            return { 
+                success: true, 
+                data: loreEntry, 
+                warning: 'Saved to vault, but semantic search is temporarily unavailable (check Gemini/Pinecone keys).' 
+            };
+        }
 
         revalidatePath('/lore-vault');
-
         return { success: true, data: loreEntry };
     } catch (error) {
-        console.error('Error creating lore entry:', error);
-        return { success: false, error: 'Failed to create lore entry' };
+        console.error('Database Error:', error);
+        return { success: false, error: 'Database connection failed. Could not save lore.' };
     }
 }
 
