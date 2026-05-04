@@ -1,13 +1,13 @@
 'use server';
 
+import prisma from '@/lib/db/prisma';
 import { geminiService } from '@/lib/ai/gemini';
 import { nvidiaService } from '@/lib/ai/nvidia';
 import { replicateService } from '@/lib/ai/replicate';
 import { pollinationsService } from '@/lib/ai/pollinations';
-import prisma from '@/lib/db/prisma';
 
 /**
- * Transform a scene into a Stable Diffusion prompt
+ * Transform a raw scene description into a high-quality image prompt
  */
 export async function transformSceneToPrompt(sceneText: string, projectId: string = 'default-project') {
     try {
@@ -17,8 +17,8 @@ export async function transformSceneToPrompt(sceneText: string, projectId: strin
             // Try to fetch provider preference
             const project = await prisma.project.findUnique({
                 where: { id: projectId },
-                select: { aiProvider: true }
-            });
+            }) as any; // Cast to any to bypass Prisma sync lag
+            
             provider = project?.aiProvider || 'nvidia';
         } catch (dbError) {
             console.warn('Database unreachable, defaulting to NVIDIA for prompt transformation');
@@ -40,7 +40,7 @@ export async function transformSceneToPrompt(sceneText: string, projectId: strin
 }
 
 /**
- * Generate an image from a prompt
+ * Generate an image from a prompt using the preferred provider
  */
 export async function generateSceneImage(prompt: string, projectId: string = 'default-project') {
     try {
@@ -49,8 +49,8 @@ export async function generateSceneImage(prompt: string, projectId: string = 'de
         try {
             const project = await prisma.project.findUnique({
                 where: { id: projectId },
-                select: { imageProvider: true }
-            });
+            }) as any; // Cast to any to bypass Prisma sync lag
+            
             provider = project?.imageProvider || 'pollinations';
         } catch (dbError) {
             console.warn('Database unreachable, defaulting to Pollinations for image generation');
@@ -70,24 +70,19 @@ export async function generateSceneImage(prompt: string, projectId: string = 'de
 }
 
 /**
- * Combined action: transform scene and generate image
+ * Full pipeline: Text -> Prompt -> Image
  */
-export async function processScene(sceneText: string) {
+export async function processScene(sceneText: string, projectId: string = 'default-project') {
     try {
-        // Transform scene to prompt
-        const promptResult = await transformSceneToPrompt(sceneText);
-        if (!promptResult.success) {
+        // 1. Transform scene to prompt
+        const promptResult = await transformSceneToPrompt(sceneText, projectId);
+        if (!promptResult.success || !promptResult.data) {
             return promptResult;
         }
 
-        // Generate image from prompt
-        const promptData = promptResult.data;
-        if (!promptData) {
-             return { success: false, error: 'Prompt generation returned empty data' };
-        }
-
-        const imageResult = await generateSceneImage(promptData);
-        if (!imageResult.success) {
+        // 2. Generate image from prompt
+        const imageResult = await generateSceneImage(promptResult.data, projectId);
+        if (!imageResult.success || !imageResult.data) {
             return imageResult;
         }
 
@@ -95,11 +90,11 @@ export async function processScene(sceneText: string) {
             success: true,
             data: {
                 prompt: promptResult.data,
-                imageUrl: imageResult.data,
-            },
+                imageUrl: imageResult.data
+            }
         };
     } catch (error) {
-        console.error('Error processing scene:', error);
+        console.error('Error in scene processing pipeline:', error);
         return { success: false, error: 'Failed to process scene' };
     }
 }
