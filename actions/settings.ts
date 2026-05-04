@@ -5,10 +5,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Pinecone } from '@pinecone-database/pinecone';
 
 export async function checkServiceStatus() {
-    const results = {
+    const results: Record<string, { status: string, message: string }> = {
         database: { status: 'unknown', message: 'Not checked' },
         gemini: { status: 'unknown', message: 'Not checked' },
         pinecone: { status: 'unknown', message: 'Not checked' },
+        nvidia: { status: 'unknown', message: 'Not checked' },
     };
 
     try {
