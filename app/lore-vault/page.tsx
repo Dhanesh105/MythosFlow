@@ -10,6 +10,7 @@ import { BookOpen, Loader2, Plus, Search } from 'lucide-react';
 import { createLoreEntry, getLoreEntries } from '@/actions/lore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoreCard } from '@/components/lore/lore-card';
+import { toast } from 'sonner';
 
 // Temporary project ID - in a real app, this would come from user context
 const PROJECT_ID = 'default-project';
@@ -122,7 +123,12 @@ export default function LoreVaultPage() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-semibold">Your Lore</h2>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="rounded-xl"
+                                onClick={() => toast.info('Semantic search is always active in the Editor context panel.')}
+                            >
                                 <Search className="h-4 w-4 mr-2" />
                                 Search
                             </Button>

@@ -9,6 +9,7 @@ import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from '
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getStoryboardItems, saveStoryboard } from '@/actions/storyboard';
 import { StoryboardCanvas } from '@/components/storyboard/storyboard-canvas';
+import { toast } from 'sonner';
 
 // Temporary project ID - in a real app, this would come from user context
 const PROJECT_ID = 'default-project';
@@ -88,11 +89,19 @@ export default function StoryboardPage() {
                             variant="outline"
                             onClick={handleSave}
                             disabled={saveMutation.isPending}
+                            className="rounded-xl"
                         >
                             <Save className="h-4 w-4 mr-2" />
-                            {saveMutation.isPending ? 'Saving...' : 'Save'}
+                            {saveMutation.isPending ? 'Saving...' : 'Save Layout'}
                         </Button>
-                        <Button variant="secondary">
+                        <Button 
+                            variant="secondary"
+                            className="rounded-xl"
+                            onClick={() => {
+                                window.print();
+                                toast.info('Printing storyboard view...');
+                            }}
+                        >
                             <Download className="h-4 w-4 mr-2" />
                             Export PDF
                         </Button>
