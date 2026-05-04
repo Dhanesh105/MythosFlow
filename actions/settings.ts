@@ -65,8 +65,11 @@ export async function checkServiceStatus() {
     }
 }
 
+import { ensureDefaultProject } from '@/lib/db/init';
+
 export async function updateProjectSettings(id: string, data: { name: string; description?: string; aiProvider?: string; imageProvider?: string }) {
     try {
+        await ensureDefaultProject();
         await prisma.project.update({
             where: { id },
             data,
@@ -80,6 +83,7 @@ export async function updateProjectSettings(id: string, data: { name: string; de
 
 export async function getProjectDetails(id: string = 'default-project') {
     try {
+        await ensureDefaultProject();
         const project = await prisma.project.findUnique({
             where: { id },
         });
