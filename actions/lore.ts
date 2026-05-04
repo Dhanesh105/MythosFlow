@@ -84,6 +84,7 @@ export async function searchLore(
                 const entry = await prisma.loreEntry.findUnique({
                     where: { id: result.id },
                 });
+                if (!entry) return null;
                 return {
                     ...entry,
                     similarity: result.score,
@@ -91,7 +92,7 @@ export async function searchLore(
             })
         );
 
-        return { success: true, data: loreEntries.filter(Boolean) };
+        return { success: true, data: loreEntries.filter((e): e is NonNullable<typeof e> => e !== null) };
     } catch (error) {
         console.error('Error searching lore:', error);
         return { success: false, error: 'Failed to search lore' };
