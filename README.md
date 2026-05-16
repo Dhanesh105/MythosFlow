@@ -1,3 +1,5 @@
+"Built by Dhanesh Taninki — Full Stack Developer open to work. Connect on LinkedIn or reach me at dhaneshtaninki@gmail.com"
+
 # MythosFlow - AI-Driven Storytelling SaaS
 
 An AI-powered storytelling platform for sci-fi and mythology creators, featuring RAG-powered lore management, AI image generation, and interactive storyboarding.
